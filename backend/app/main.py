@@ -1,6 +1,22 @@
 # To run: uvicorn main:app --reload
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from core import explain_error
+
+app = FastAPI()
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+class ErrorRequest(BaseModel):
+    error: str
+
+@app.post("/explain")
+async def explain(req: ErrorRequest):
+    return explain_error(req.error)
+
+'''
+from fastapi import FastAPI
 from pydantic import BaseModel 
 from openai import OpenAI, InternalServerError
 import os 
@@ -137,3 +153,4 @@ async def explain_error(req: ErrorRequest):
                     "suggested_fix": str(e),
                     "relevant_link": "https://openrouter.ai/docs"
                 })
+'''
