@@ -53,22 +53,50 @@ def validate_fields(parsed: dict) -> dict:
 # API endpoint
 @app.post("/explain")
 async def explain_error(req: ErrorRequest):
-    prompt = f"""You are an expert Python debugging assistant.
-Your task is to analyze the following error message, explain it simply for a beginner, suggest a fix, and (if possible) provide a link to documentation.
+    prompt = f"""
+    You are an expert Python debugging assistant.
 
-Respond in JSON with:
-- error_type
-- explanation
-- suggested_fix
-- relevant_link
+    You will be given an error message that a beginner doesn't understand. Your job is to explain it **clearly**,       suggest a likely fix, and optionally provide a relevant link to official documentation or StackOverflow.
 
-Respond ONLY with a raw JSON object. Do not include any code block formatting.
+    Please follow this output format strictly (as a raw JSON object, **no commentary or markdown**):
 
-Error:
-{req.error}
-"""
+    {{
+    "error_type": "...",          // One-word name of the error (e.g., TypeError)
+    "explanation": "...",         // Explain in beginner-friendly language (1-2 sentences)
+    "suggested_fix": "...",       // Concrete fix or advice
+    "relevant_link": "..." // Link to documentation or a helpful StackOverflow post
+    }}
+    
+    Think through the problem in steps (but do not include this reasoning in the final output).
+    
+    Rules:
+    - Respond ONLY with a valid JSON object, no markdown formatting.
+    - Do not include code block fences (like ```json).
+    - Choose a relevant link — official docs preferred, StackOverflow if needed.\n"""
 
-    prompt = add_error_type_info(prompt)
+    # This few-shot example worsens the quality a lot
+    few_shot = """
+    Example:
+
+    Input Error:
+    TypeError: unsupported operand type(s) for +: 'int' and 'str'
+
+    Output:
+    {
+    "error_type": "TypeError",
+    "explanation": "You tried to add an integer and a string, which aren't compatible types in Python.",
+    "suggested_fix": "Convert the string to an int using int(), or convert the int to a string using str().",
+    "relevant_link": "https://stackoverflow.com/questions/75556765/how-to-add-a-string-to-an-integer-in-python"
+    }\n"""
+
+    few_shot = ""
+    
+    directive = """Now process the next error:
+
+    Input Error:
+    {req.error}\n"""
+
+    prompt = prompt + few_shot + directive + add_error_type_info(prompt)
 
     client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=api_key)
     retries = 3
