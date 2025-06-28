@@ -18,7 +18,7 @@ pip install -r requirements.txt
 
 To run the backend server:
 ```
-cd backend
+cd backend/src/stackexplain
 uvicorn app.main:app --reload
 ```
 
