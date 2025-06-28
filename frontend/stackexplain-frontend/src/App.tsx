@@ -86,7 +86,10 @@ function App() {
 							whiteSpace: 'pre-wrap',
 							padding: '1rem',
 							borderRadius: '4px',
-							maxWidth: '800px',
+							maxWidth: '100%',     // instead of 800px
+							boxSizing: 'border-box',
+							marginLeft: 'auto',   // centers horizontally if maxWidth < container
+							marginRight: 'auto',
 						}}
 						className="content"
 					>
