@@ -18,7 +18,7 @@ def build_prompt(error: str, model_to_use="deepseek/deepseek-chat-v3-0324:free")
                 "explanation": "You tried to add an integer and a string, which Python does not allow.",
                 "suggested_fix": "Convert the integer or the string using int() or str() before adding.",
                 "relevant_links": [
-                    "https://docs.python.org/3/tutorial/introduction.html#using-python-as-a-calculator"
+                    "https://stackoverflow.com/questions/25675943/how-can-i-concatenate-str-and-int-objects"
                 ]
             }
         },
