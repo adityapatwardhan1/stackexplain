@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # backend/cli.py
 import argparse
 from app.core import explain_error
@@ -12,7 +13,9 @@ def main():
     print(f"• Error Type:    {result['error_type']}")
     print(f"• Explanation:   {result['explanation']}")
     print(f"• Suggested Fix: {result['suggested_fix']}")
-    print(f"• More Info:     {result['relevant_link']}\n")
+    print(f"• More Info:")
+    for link in result['relevant_links']:
+        print(f"    • {link}")
 
 if __name__ == "__main__":
     main()
