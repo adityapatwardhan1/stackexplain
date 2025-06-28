@@ -7,8 +7,12 @@ StackExplain is a website, backend API, and CLI tool that analyzes Python error 
 
 ## Installation (Development)
 
-Clone the repo and install locally:
+Clone the repository:
+```
+git clone https://github.com/adityapatwardhan1/stackexplain.git
+```
 
+Build the virtual environment and install dependencies:
 ```bash
 cd backend
 python -m venv venv
