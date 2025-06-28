@@ -6,38 +6,76 @@ load_dotenv()
 api_key = os.getenv("OPENROUTER_API_KEY")
 client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=api_key)
 
-def build_prompt(error: str) -> str:
-    
-    return f"""You are an expert Python debugging assistant.
+def build_prompt(error: str, model_to_use="deepseek/deepseek-chat-v3-0324:free") -> str:
+    examples = [
+        {
+            "input": "TypeError: unsupported operand type(s) for +: 'int' and 'str'",
+            "output": {
+                "error_type": "TypeError",
+                "explanation": "You tried to add an integer and a string, which Python does not allow.",
+                "suggested_fix": "Convert the integer or the string using int() or str() before adding.",
+                "relevant_link": "https://docs.python.org/3/tutorial/introduction.html#using-python-as-a-calculator"
+            }
+        },
+        {
+            "input": "IndexError: list index out of range",
+            "output": {
+                "error_type": "IndexError",
+                "explanation": "You tried to access a position in a list that doesn't exist.",
+                "suggested_fix": "Make sure your index is within the bounds of the list (0 to len(list)-1).",
+                "relevant_link": "https://docs.python.org/3/library/exceptions.html#IndexError"
+            }
+        }
+    ]
 
-    You will be given an error message that a beginner doesn't understand. Your job is to explain it **clearly**, suggest a likely fix, and optionally provide a relevant link to official documentation or StackOverflow.
+    few_shot_block = ""
+    for ex in examples:
+        few_shot_block += f"""Example:
 
-    Please follow this output format strictly (as a raw JSON object, **no commentary or markdown**):
+Input:
+{ex["input"]}
 
-    {{
-    "error_type": "...",          // One-word name of the error (e.g., TypeError)
-    "explanation": "...",         // Explain in beginner-friendly language (1-2 sentences)
-    "suggested_fix": "...",       // Concrete fix or advice
-    "relevant_link": "..." // Link to documentation or a helpful StackOverflow post
-    }}
-    
-    Think through the problem in steps (but do not include this reasoning in the final output).
-    
-    Rules:
-    - Respond ONLY with a valid JSON object, no markdown formatting.
-    - Do not include code block fences (like ```json).
-    - Choose a relevant link — official docs preferred, StackOverflow if needed.
+Output:
+{json.dumps(ex["output"], indent=2)}
 
-    Error:
-    {error}
-    """
+"""
+
+    instruction_block = """You are an expert Python debugging assistant.
+
+Your job is to explain Python error messages clearly for beginners, suggest a fix, and provide a relevant documentation link.
+
+Always respond with a raw JSON object in the following format (no markdown, no code blocks):
+
+{
+  "error_type": "...",
+  "explanation": "...",
+  "suggested_fix": "...",
+  "relevant_link": "..."
+}
+
+Think through the problem step-by-step before responding, but only output the final JSON.
+
+"""
+
+    query_block = f"""Now explain this error:
+
+Input:
+{error}
+"""
+
+    if any(keyword in model_to_use.lower() for keyword in ["deepseek", "gemini"]):
+        return instruction_block + few_shot_block + query_block
+    else:
+        return instruction_block + query_block
+
 
 def explain_error(error_msg: str, retries: int = 3) -> dict:
     prompt = build_prompt(error_msg)
+    model_to_use = "deepseek/deepseek-chat-v3-0324:free"
     for i in range(retries):
         try:
             resp = client.chat.completions.create(
-                model="mistralai/mistral-small-3.2-24b-instruct:free",
+                model=model_to_use,
                 messages=[{"role": "user", "content": prompt}],
             )
             content = resp.choices[0].message.content.strip()
