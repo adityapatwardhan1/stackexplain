@@ -11,6 +11,8 @@ client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=api_key)
 
 import json
 
+# "mistralai/mistral-small-3.2-24b-instruct:free"
+
 def build_prompt(error: str, model_to_use="deepseek/deepseek-chat-v3-0324:free") -> str:
     examples = [
         {
@@ -129,9 +131,8 @@ def clean_links(links: list[str], max_len: int = 200) -> list[str]:
     return cleaned
 
 
-def explain_error(error_msg: str, retries: int = 3) -> dict:
-    prompt = build_prompt(error_msg)
-    model_to_use = "deepseek/deepseek-chat-v3-0324:free"
+def explain_error(error_msg: str, model_to_use: str = "deepseek/deepseek-chat-v3-0324:free", retries: int = 3) -> dict:
+    prompt = build_prompt(error_msg, model_to_use=model_to_use)
     for i in range(retries):
         try:
             resp = client.chat.completions.create(
