@@ -1,5 +1,10 @@
 #!/usr/bin/python3
+# use PyInstaller to make an executable
+# pip install pyinstaller
+# pyinstaller --name {insert_name} --onefile cli.py
+
 # backend/cli.py
+
 import argparse
 from app.core import explain_error
 
