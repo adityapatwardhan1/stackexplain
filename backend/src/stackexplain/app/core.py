@@ -9,20 +9,12 @@ load_dotenv()
 api_key = os.getenv("OPENROUTER_API_KEY")
 client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=api_key)
 
+import json
+
 def build_prompt(error: str, model_to_use="deepseek/deepseek-chat-v3-0324:free") -> str:
     examples = [
         {
-            "input": "TypeError: unsupported operand type(s) for +: 'int' and 'str'",
-            "output": {
-                "error_type": "TypeError",
-                "explanation": "You tried to add an integer and a string, which Python does not allow.",
-                "suggested_fix": "Convert the integer or the string using int() or str() before adding.",
-                "relevant_links": [
-                    "https://stackoverflow.com/questions/25675943/how-can-i-concatenate-str-and-int-objects"
-                ]
-            }
-        },
-        {
+            "language": "Python",
             "input": "IndexError: list index out of range",
             "output": {
                 "error_type": "IndexError",
@@ -32,12 +24,37 @@ def build_prompt(error: str, model_to_use="deepseek/deepseek-chat-v3-0324:free")
                     "https://docs.python.org/3/library/exceptions.html#IndexError"
                 ]
             }
+        },
+        {
+            "language": "JavaScript",
+            "input": "TypeError: undefined is not a function",
+            "output": {
+                "error_type": "TypeError",
+                "explanation": "You're trying to call something that isn't defined as a function.",
+                "suggested_fix": "Check if the variable you're calling is actually assigned to a function.",
+                "relevant_links": [
+                    "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Not_a_function"
+                ]
+            }
+        },
+        {
+            "language": "Java",
+            "input": "NullPointerException",
+            "output": {
+                "error_type": "NullPointerException",
+                "explanation": "You're trying to use an object reference that is null.",
+                "suggested_fix": "Check if the object is null before calling methods or accessing fields on it.",
+                "relevant_links": [
+                    "https://docs.oracle.com/javase/8/docs/api/java/lang/NullPointerException.html"
+                ]
+            }
         }
     ]
 
     few_shot_block = ""
     for ex in examples:
         few_shot_block += f"""Example:
+This is a {ex["language"]} error.
 
 Input:
 {ex["input"]}
@@ -47,9 +64,9 @@ Output:
 
 """
 
-    instruction_block = """You are an expert Python debugging assistant.
+    instruction_block = """You are an expert multilingual debugging assistant.
 
-Your job is to explain Python error messages clearly for beginners, suggest a fix, and provide up to 3 helpful documentation links.
+Your task is to analyze code error messages from various programming languages (like Python, JavaScript, Java, etc.), explain what causes them, suggest a fix, and provide up to 3 helpful documentation links.
 
 Always respond with a raw JSON object in the following format (no markdown, no code blocks):
 
@@ -60,7 +77,7 @@ Always respond with a raw JSON object in the following format (no markdown, no c
   "relevant_links": ["...", "...", "..."]
 }
 
-Think through the problem step-by-step before responding, but only output the final JSON.
+Think step-by-step if needed, but only output the final JSON.
 
 """
 
@@ -70,10 +87,12 @@ Input:
 {error}
 """
 
+    # Use few-shot prompting only for DeepSeek or Gemini
     if any(keyword in model_to_use.lower() for keyword in ["deepseek", "gemini"]):
         return instruction_block + few_shot_block + query_block
     else:
         return instruction_block + query_block
+
 
 def verify_link(url: str, max_title_len: int = 100) -> bool:
     """Check if a link is reachable and has a reasonable HTML title."""
