@@ -46,7 +46,7 @@ def get_error_input():
                 sys.exit(1)
 
 def main():
-    parser = argparse.ArgumentParser(description="StackExplain CLI")
+    parser = argparse.ArgumentParser(description="Application CLI")
     parser.add_argument("error", nargs="?", help="Error message (optional: use stdin or clipboard)")
     parser.add_argument(
         "--model",
@@ -62,15 +62,18 @@ def main():
         error = get_error_input()
 
     model_full_name = MODEL_MAP.get(args.model, MODEL_MAP["deepseek"])
+
+    print("Reasoning...")
     result = explain_error(error, model_to_use=model_full_name)
 
-    print("\n🧠 StackExplain Result:")
     print(f"• Error Type:    {result['error_type']}")
     print(f"• Explanation:   {result['explanation']}")
     print(f"• Suggested Fix: {result['suggested_fix']}")
-    print(f"• More Info:")
-    for link in result['relevant_links']:
-        print(f"    • {link}")
+    
+    if result.get('relevant_links'):
+        print(f"• More Info:")
+        for link in result['relevant_links']:
+            print(f"    • {link}")
 
 if __name__ == "__main__":
     main()

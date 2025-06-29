@@ -11,17 +11,17 @@ function App() {
 		suggested_fix?: string;
 		relevant_links?: string[];
 	} | null>(null);
+	const [loading, setLoading] = useState(false);
 
 	const [darkMode, setDarkMode] = useState(false);
 
 	const BACKEND_SERVER_URL = 'http://localhost:8000/explain';
 
 	const handleSubmitError = async () => {
+		setLoading(true);
+		setResponse(null); // optionally clear previous response
 		try {
-			const res = await axios.post(BACKEND_SERVER_URL, {
-				error,
-				model,
-			});
+			const res = await axios.post(BACKEND_SERVER_URL, { error, model });
 			setResponse(res.data);
 		} catch (err) {
 			console.error(err);
@@ -31,8 +31,11 @@ function App() {
 				suggested_fix: 'Ensure the server is running on port 8000.',
 				relevant_links: [],
 			});
+		} finally {
+			setLoading(false);
 		}
 	};
+
 
 	useEffect(() => {
 		document.body.classList.toggle('dark', darkMode);
@@ -77,7 +80,10 @@ function App() {
 
 				<br />
 
-				<button onClick={handleSubmitError}>Explain Error</button>
+				<button onClick={handleSubmitError} disabled={loading}>
+					{loading ? 'Explaining...' : 'Explain Error'}
+				</button>
+
 
 				{response && (
 					<div
