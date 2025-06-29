@@ -69,8 +69,8 @@ def main():
     print(f"• Error Type:    {result['error_type']}")
     print(f"• Explanation:   {result['explanation']}")
     print(f"• Suggested Fix: {result['suggested_fix']}")
-    
-    if result.get('relevant_links'):
+
+    if len(result.get('relevant_links', [])) > 0:
         print(f"• More Info:")
         for link in result['relevant_links']:
             print(f"    • {link}")
