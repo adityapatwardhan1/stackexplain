@@ -49,39 +49,29 @@ pip install -e .
 
     Monorepo-style root containing separate frontend/ and backend/ directories to cleanly separate concerns.
 
-    Backend uses a src/ layout:
+    The src/stackexplain folder contains the Python package source.
 
-    backend/
-      ├── src/
-      │   └── stackexplain/
-      │       ├── app/
-      │       ├── cli.py
-      │       └── __init__.py
-      ├── pyproject.toml
-      ├── .env
-      └── venv/
+    This structure avoids issues where local imports accidentally shadow installed packages.
 
-        The src/stackexplain folder contains the Python package source.
-
-        This structure avoids issues where local imports accidentally shadow installed packages.
-
-        It also aligns with modern Python packaging best practices.
+    It also aligns with modern Python packaging best practices.
 
 2. Packaging & Installation
 
-    Use PEP 621 compliant pyproject.toml for dependency and build metadata, making the project installable via pip install -e . in editable mode.
+    Use PEP 621 compliant pyproject.toml for dependency and build metadata, making the project installable via ```pip install -e .``` in editable mode.
 
     CLI entry point is defined via pyproject.toml under [project.scripts], e.g.:
 
+    ```
     [project.scripts]
     explainerr = "stackexplain.cli:main"
+    ```
 
     Bundling with PyInstaller was not prioritized, as deployment is handled via standard Python installation (pip install). 
     Relying on pip for installation and dependency management keeps the developer experience simple and compatible with most environments.
 
 3. Environment Configuration
 
-    Use .env file for sensitive keys like OPENROUTER_API_KEY.
+    Use .env file for keys.
 
     Load environment variables via python-dotenv with robust path handling so the app runs reliably regardless of the current working directory.
 
