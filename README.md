@@ -38,7 +38,7 @@ npm install
 npm run dev
 ```
 
-To build the CLI tool:
+To build the CLI tool (named explainerr):
 ```
 cd backend
 pip install -e .
